@@ -32,16 +32,29 @@ function isLikelyUrl(text) {
 }
 
 function formatLabel(format) {
-  return format.replace(/([a-z])([A-Z])/g, "$1 $2");
+  return String(format).replace(/([a-z])([A-Z])/g, "$1 $2");
 }
 
 function showResult({ text, format }) {
-  scanner.pause();
-  resultFormat.textContent = formatLabel(format);
-  resultText.textContent = text;
-  resultOpen.hidden = !isLikelyUrl(text);
-  resultBanner.hidden = false;
-  addToHistory({ text, format });
+  console.log("showResult() called with format:", format, "text:", text);
+  try {
+    scanner.pause();
+    historyPanel.hidden = true;
+    historyToggle.setAttribute("aria-expanded", "false");
+    resultFormat.textContent = formatLabel(format);
+    resultText.textContent = text;
+    resultOpen.hidden = !isLikelyUrl(text);
+    resultBanner.hidden = false;
+    console.log(
+      "resultBanner.hidden is now:",
+      resultBanner.hidden,
+      "offsetParent:",
+      !!resultBanner.offsetParent,
+    );
+    addToHistory({ text, format });
+  } catch (err) {
+    console.error("showResult() threw:", err);
+  }
 }
 
 function hideResult() {

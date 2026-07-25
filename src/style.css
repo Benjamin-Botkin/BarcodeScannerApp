@@ -110,6 +110,7 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
+  z-index: 10;
   padding: 20px 20px calc(env(safe-area-inset-bottom, 0) + 20px);
   background: rgba(20, 20, 20, 0.95);
   border-top: 1px solid rgba(255, 255, 255, 0.1);
@@ -162,6 +163,7 @@ body {
 #history-panel {
   position: absolute;
   inset: 0;
+  z-index: 5;
   background: rgba(10, 10, 10, 0.97);
   display: flex;
   flex-direction: column;

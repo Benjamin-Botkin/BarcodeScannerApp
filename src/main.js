@@ -8,7 +8,9 @@ import {
 } from "./history.js";
 import { installDebugOverlay } from "./debug.js";
 
-installDebugOverlay();
+if (new URLSearchParams(location.search).has("debug")) {
+  installDebugOverlay();
+}
 
 const video = document.getElementById("camera");
 const canvas = document.getElementById("capture-canvas");

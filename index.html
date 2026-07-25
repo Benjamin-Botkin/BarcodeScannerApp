@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no"
+    />
+    <title>Barcode Scanner</title>
+    <meta name="description" content="Scan QR codes, Data Matrix, PDF417, and Aztec barcodes with your camera." />
+    <meta name="theme-color" content="#0d9488" />
+
+    <!-- PWA manifest -->
+    <link rel="manifest" href="%BASE_URL%manifest.json" />
+
+    <!-- iOS Home Screen support -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Scanner" />
+    <link rel="apple-touch-icon" href="%BASE_URL%icons/apple-touch-icon.png" />
+
+    <link rel="icon" type="image/png" sizes="32x32" href="%BASE_URL%icons/favicon-32.png" />
+  </head>
+  <body>
+    <div id="app">
+      <video id="camera" autoplay playsinline muted></video>
+      <canvas id="capture-canvas" hidden></canvas>
+
+      <div id="viewfinder" aria-hidden="true"></div>
+
+      <div id="top-bar">
+        <h1>Barcode Scanner</h1>
+      </div>
+
+      <div id="camera-error" hidden>
+        <p></p>
+      </div>
+
+      <button id="history-toggle" type="button" aria-expanded="false">
+        History
+      </button>
+
+      <div id="result-banner" hidden>
+        <div id="result-format"></div>
+        <div id="result-text"></div>
+        <div id="result-actions">
+          <button id="result-copy" type="button">Copy</button>
+          <button id="result-open" type="button" hidden>Open Link</button>
+          <button id="result-dismiss" type="button">Scan Again</button>
+        </div>
+      </div>
+
+      <aside id="history-panel" hidden>
+        <div id="history-header">
+          <h2>Scan History</h2>
+          <button id="history-clear" type="button">Clear</button>
+          <button id="history-close" type="button" aria-label="Close history">
+            &times;
+          </button>
+        </div>
+        <ul id="history-list"></ul>
+        <p id="history-empty">No scans yet.</p>
+      </aside>
+    </div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

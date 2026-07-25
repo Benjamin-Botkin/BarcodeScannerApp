@@ -1,7 +1,7 @@
 {
   "name": "Barcode Scanner",
   "short_name": "Scanner",
-  "description": "Scan QR codes, Data Matrix, PDF417, and Aztec barcodes with your camera.",
+  "description": "Scan QR codes, Data Matrix, PDF417, Aztec, and standard 1D barcodes with your camera.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

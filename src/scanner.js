@@ -11,7 +11,7 @@ prepareZXingModule({
 
 const READER_OPTIONS = {
   tryHarder: true,
-  formats: ["QRCode", "DataMatrix", "Aztec", "PDF417"],
+  formats: ["QRCode", "DataMatrix", "Aztec", "PDF417", "AllLinear"],
   maxNumberOfSymbols: 1,
 };
 

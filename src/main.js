@@ -14,8 +14,10 @@ if (new URLSearchParams(location.search).has("debug")) {
 
 const video = document.getElementById("camera");
 const canvas = document.getElementById("capture-canvas");
+const viewfinder = document.getElementById("viewfinder");
 const cameraError = document.getElementById("camera-error");
-const resultBanner = document.getElementById("result-banner");
+const scanOutput = document.getElementById("scan-output");
+const scanActions = document.getElementById("scan-actions");
 const resultFormat = document.getElementById("result-format");
 const resultText = document.getElementById("result-text");
 const resultCopy = document.getElementById("result-copy");
@@ -44,29 +46,20 @@ function formatLabel(format) {
 }
 
 function showResult({ text, format }) {
-  console.log("showResult() called with format:", format, "text:", text);
-  try {
-    scanner.pause();
-    historyPanel.hidden = true;
-    historyToggle.setAttribute("aria-expanded", "false");
-    resultFormat.textContent = formatLabel(format);
-    resultText.textContent = text;
-    resultOpen.hidden = !isLikelyUrl(text);
-    resultBanner.hidden = false;
-    console.log(
-      "resultBanner.hidden is now:",
-      resultBanner.hidden,
-      "offsetParent:",
-      !!resultBanner.offsetParent,
-    );
-    addToHistory({ text, format });
-  } catch (err) {
-    console.error("showResult() threw:", err);
-  }
+  scanner.pause();
+  historyPanel.hidden = true;
+  historyToggle.setAttribute("aria-expanded", "false");
+  resultFormat.textContent = formatLabel(format);
+  resultText.textContent = text;
+  resultOpen.hidden = !isLikelyUrl(text);
+  scanOutput.hidden = false;
+  scanActions.hidden = false;
+  addToHistory({ text, format });
 }
 
 function hideResult() {
-  resultBanner.hidden = true;
+  scanOutput.hidden = true;
+  scanActions.hidden = true;
   resultFormat.textContent = "";
   resultText.textContent = "";
   resultOpen.hidden = true;
@@ -115,35 +108,17 @@ function renderHistory() {
 }
 
 historyToggle.addEventListener("click", () => {
-  console.log("history-toggle clicked");
   renderHistory();
   historyPanel.hidden = false;
   historyToggle.setAttribute("aria-expanded", "true");
-  const cs = getComputedStyle(historyPanel);
-  console.log(
-    `history-panel opened: hidden=${historyPanel.hidden}, opacity=${cs.opacity}, zIndex=${cs.zIndex}, display=${cs.display}`,
-  );
-  for (const el of [historyExport, historyClear, historyClose]) {
-    const s = getComputedStyle(el);
-    const rect = el.getBoundingClientRect();
-    const topEl = document.elementFromPoint(
-      rect.left + rect.width / 2,
-      rect.top + rect.height / 2,
-    );
-    console.log(
-      `${el.id}: opacity=${s.opacity} pointerEvents=${s.pointerEvents} visibility=${s.visibility} elementAtCenter=${topEl ? topEl.id || topEl.tagName : "none"}`,
-    );
-  }
 });
 
 historyClose.addEventListener("click", () => {
-  console.log("history-close clicked");
   historyPanel.hidden = true;
   historyToggle.setAttribute("aria-expanded", "false");
 });
 
 historyExport.addEventListener("click", () => {
-  console.log("history-export clicked, entries:", getHistory().length);
   const entries = getHistory();
   const csv = historyToCsv(entries);
   const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
@@ -155,19 +130,17 @@ historyExport.addEventListener("click", () => {
   a.click();
   a.remove();
   URL.revokeObjectURL(url);
-  console.log("history-export: download triggered");
 });
 
 historyClear.addEventListener("click", () => {
-  console.log("history-clear clicked, entries before:", getHistory().length);
   clearHistory();
   renderHistory();
-  console.log("history-clear: done, entries after:", getHistory().length);
 });
 
 const scanner = new Scanner({
   video,
   canvas,
+  viewfinder,
   onResult: showResult,
 });
 

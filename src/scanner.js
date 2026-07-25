@@ -17,10 +17,36 @@ const READER_OPTIONS = {
 
 const SCAN_INTERVAL_MS = 300;
 
+// Video is displayed with object-fit: cover, so it's uniformly scaled up
+// until it fills the display box, with any excess cropped off-center.
+// This maps the on-screen viewfinder rect back to the matching region in
+// the video's native pixel coordinates, so decoding only looks there.
+function getViewfinderVideoRect(video, viewfinderRect) {
+  const videoRect = video.getBoundingClientRect();
+  const scale = Math.max(
+    videoRect.width / video.videoWidth,
+    videoRect.height / video.videoHeight,
+  );
+  const renderedW = video.videoWidth * scale;
+  const renderedH = video.videoHeight * scale;
+  const cropX = (renderedW - videoRect.width) / 2;
+  const cropY = (renderedH - videoRect.height) / 2;
+
+  const relLeft = viewfinderRect.left - videoRect.left;
+  const relTop = viewfinderRect.top - videoRect.top;
+
+  const x = Math.max(0, (relLeft + cropX) / scale);
+  const y = Math.max(0, (relTop + cropY) / scale);
+  const w = Math.min(viewfinderRect.width / scale, video.videoWidth - x);
+  const h = Math.min(viewfinderRect.height / scale, video.videoHeight - y);
+  return { x, y, w, h };
+}
+
 export class Scanner {
-  constructor({ video, canvas, onResult }) {
+  constructor({ video, canvas, viewfinder, onResult }) {
     this.video = video;
     this.canvas = canvas;
+    this.viewfinder = viewfinder;
     this.ctx = canvas.getContext("2d", { willReadFrequently: true });
     this.onResult = onResult;
     this.stream = null;
@@ -100,14 +126,20 @@ export class Scanner {
 
     this.busy = true;
     try {
-      const { videoWidth: w, videoHeight: h } = this.video;
+      const viewfinderRect = this.viewfinder.getBoundingClientRect();
+      const { x, y, w, h } = getViewfinderVideoRect(
+        this.video,
+        viewfinderRect,
+      );
       if (!this._loggedFirstDecodeAttempt) {
-        console.log(`First decode attempt on frame ${w}x${h}`);
+        console.log(
+          `First decode attempt, viewfinder region in video space: ${w.toFixed(0)}x${h.toFixed(0)} at (${x.toFixed(0)},${y.toFixed(0)})`,
+        );
         this._loggedFirstDecodeAttempt = true;
       }
       this.canvas.width = w;
       this.canvas.height = h;
-      this.ctx.drawImage(this.video, 0, 0, w, h);
+      this.ctx.drawImage(this.video, x, y, w, h, 0, 0, w, h);
       const imageData = this.ctx.getImageData(0, 0, w, h);
 
       const results = await readBarcodes(imageData, READER_OPTIONS);

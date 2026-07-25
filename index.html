@@ -26,7 +26,18 @@
       <video id="camera" autoplay playsinline muted></video>
       <canvas id="capture-canvas" hidden></canvas>
 
+      <div id="scan-output" hidden>
+        <div id="result-format"></div>
+        <div id="result-text"></div>
+      </div>
+
       <div id="viewfinder" aria-hidden="true"></div>
+
+      <div id="scan-actions" hidden>
+        <button id="result-copy" type="button">Copy</button>
+        <button id="result-open" type="button" hidden>Open Link</button>
+        <button id="result-dismiss" type="button">Scan Again</button>
+      </div>
 
       <div id="top-bar">
         <h1>Barcode Scanner</h1>
@@ -39,16 +50,6 @@
       <button id="history-toggle" type="button" aria-expanded="false">
         History
       </button>
-
-      <div id="result-banner" hidden>
-        <div id="result-format"></div>
-        <div id="result-text"></div>
-        <div id="result-actions">
-          <button id="result-copy" type="button">Copy</button>
-          <button id="result-open" type="button" hidden>Open Link</button>
-          <button id="result-dismiss" type="button">Scan Again</button>
-        </div>
-      </div>
 
       <aside id="history-panel" hidden>
         <div id="history-header">

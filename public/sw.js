@@ -1,4 +1,4 @@
-const CACHE_NAME = "barcode-scanner-shell-v1";
+const CACHE_NAME = "barcode-scanner-shell-v2";
 const SCOPE = self.registration.scope;
 
 const PRECACHE_URLS = [
@@ -35,24 +35,24 @@ self.addEventListener("activate", (event) => {
   );
 });
 
+// Network-first: always try to get the latest deployed files when online,
+// and only fall back to the cache when offline. This avoids ever getting
+// stuck serving a stale app shell (e.g. an old index.html pointing at a
+// JS bundle filename that no longer exists after a redeploy).
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
 
   event.respondWith(
-    caches.match(event.request).then((cached) => {
-      if (cached) return cached;
-
-      return fetch(event.request)
-        .then((response) => {
-          if (response.ok && response.type === "basic") {
-            const copy = response.clone();
-            caches.open(CACHE_NAME).then((cache) => {
-              cache.put(event.request, copy);
-            });
-          }
-          return response;
-        })
-        .catch(() => cached);
-    }),
+    fetch(event.request)
+      .then((response) => {
+        if (response.ok && response.type === "basic") {
+          const copy = response.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, copy);
+          });
+        }
+        return response;
+      })
+      .catch(() => caches.match(event.request)),
   );
 });

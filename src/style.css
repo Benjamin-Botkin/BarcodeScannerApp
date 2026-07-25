@@ -189,11 +189,21 @@ body {
   font-size: 1.1rem;
 }
 
+#history-export {
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-size: 0.9rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
 #history-clear {
   background: none;
   border: none;
   color: #f2b8b5;
   font-size: 0.9rem;
+  white-space: nowrap;
 }
 
 #history-close {

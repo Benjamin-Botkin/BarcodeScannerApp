@@ -22,3 +22,20 @@ export function addToHistory({ text, format }) {
 export function clearHistory() {
   localStorage.removeItem(STORAGE_KEY);
 }
+
+function csvEscape(value) {
+  const str = String(value);
+  return /[",\n]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str;
+}
+
+export function historyToCsv(entries) {
+  const header = ["Timestamp", "Format", "Text"];
+  const rows = entries.map((e) => [
+    new Date(e.timestamp).toISOString(),
+    e.format,
+    e.text,
+  ]);
+  return [header, ...rows]
+    .map((row) => row.map(csvEscape).join(","))
+    .join("\r\n");
+}

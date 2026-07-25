@@ -1,6 +1,11 @@
 import "./style.css";
 import { Scanner } from "./scanner.js";
-import { getHistory, addToHistory, clearHistory } from "./history.js";
+import {
+  getHistory,
+  addToHistory,
+  clearHistory,
+  historyToCsv,
+} from "./history.js";
 import { installDebugOverlay } from "./debug.js";
 
 installDebugOverlay();
@@ -18,6 +23,7 @@ const resultDismiss = document.getElementById("result-dismiss");
 const historyToggle = document.getElementById("history-toggle");
 const historyPanel = document.getElementById("history-panel");
 const historyClose = document.getElementById("history-close");
+const historyExport = document.getElementById("history-export");
 const historyClear = document.getElementById("history-clear");
 const historyList = document.getElementById("history-list");
 const historyEmpty = document.getElementById("history-empty");
@@ -59,6 +65,9 @@ function showResult({ text, format }) {
 
 function hideResult() {
   resultBanner.hidden = true;
+  resultFormat.textContent = "";
+  resultText.textContent = "";
+  resultOpen.hidden = true;
   scanner.resume();
 }
 
@@ -112,6 +121,20 @@ historyToggle.addEventListener("click", () => {
 historyClose.addEventListener("click", () => {
   historyPanel.hidden = true;
   historyToggle.setAttribute("aria-expanded", "false");
+});
+
+historyExport.addEventListener("click", () => {
+  const entries = getHistory();
+  const csv = historyToCsv(entries);
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `barcode-scans-${new Date().toISOString().slice(0, 10)}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
 });
 
 historyClear.addEventListener("click", () => {

@@ -36,11 +36,11 @@ function chunk(type, data) {
   return Buffer.concat([len, typeBuf, data, crcBuf]);
 }
 
-// Draws a simple "scanner" icon: teal background, rounded-corner viewfinder
+// Draws a simple "scanner" icon: red background, rounded-corner viewfinder
 // brackets, and a row of barcode-like bars in the center.
 function renderIcon(size) {
   const px = new Uint8ClampedArray(size * size * 4);
-  const bg = [13, 148, 136]; // teal-600
+  const bg = [215, 21, 0]; // #d71500 accent
   const fg = [255, 255, 255];
 
   const set = (x, y, color, alpha = 255) => {

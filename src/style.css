@@ -8,6 +8,14 @@
   box-sizing: border-box;
 }
 
+/* Guarantee the hidden attribute always wins, even over elements whose
+   #id rule sets an explicit display value (author rules otherwise take
+   precedence over the UA stylesheet's default `[hidden] { display: none }`
+   regardless of specificity). */
+[hidden] {
+  display: none !important;
+}
+
 html,
 body {
   margin: 0;

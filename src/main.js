@@ -115,17 +115,35 @@ function renderHistory() {
 }
 
 historyToggle.addEventListener("click", () => {
+  console.log("history-toggle clicked");
   renderHistory();
   historyPanel.hidden = false;
   historyToggle.setAttribute("aria-expanded", "true");
+  const cs = getComputedStyle(historyPanel);
+  console.log(
+    `history-panel opened: hidden=${historyPanel.hidden}, opacity=${cs.opacity}, zIndex=${cs.zIndex}, display=${cs.display}`,
+  );
+  for (const el of [historyExport, historyClear, historyClose]) {
+    const s = getComputedStyle(el);
+    const rect = el.getBoundingClientRect();
+    const topEl = document.elementFromPoint(
+      rect.left + rect.width / 2,
+      rect.top + rect.height / 2,
+    );
+    console.log(
+      `${el.id}: opacity=${s.opacity} pointerEvents=${s.pointerEvents} visibility=${s.visibility} elementAtCenter=${topEl ? topEl.id || topEl.tagName : "none"}`,
+    );
+  }
 });
 
 historyClose.addEventListener("click", () => {
+  console.log("history-close clicked");
   historyPanel.hidden = true;
   historyToggle.setAttribute("aria-expanded", "false");
 });
 
 historyExport.addEventListener("click", () => {
+  console.log("history-export clicked, entries:", getHistory().length);
   const entries = getHistory();
   const csv = historyToCsv(entries);
   const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
@@ -137,11 +155,14 @@ historyExport.addEventListener("click", () => {
   a.click();
   a.remove();
   URL.revokeObjectURL(url);
+  console.log("history-export: download triggered");
 });
 
 historyClear.addEventListener("click", () => {
+  console.log("history-clear clicked, entries before:", getHistory().length);
   clearHistory();
   renderHistory();
+  console.log("history-clear: done, entries after:", getHistory().length);
 });
 
 const scanner = new Scanner({

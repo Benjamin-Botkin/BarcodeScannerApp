@@ -1,6 +1,9 @@
 import "./style.css";
 import { Scanner } from "./scanner.js";
 import { getHistory, addToHistory, clearHistory } from "./history.js";
+import { installDebugOverlay } from "./debug.js";
+
+installDebugOverlay();
 
 const video = document.getElementById("camera");
 const canvas = document.getElementById("capture-canvas");

@@ -14,6 +14,7 @@ if (new URLSearchParams(location.search).has("debug")) {
 
 const video = document.getElementById("camera");
 const canvas = document.getElementById("capture-canvas");
+const freezeFrame = document.getElementById("freeze-frame");
 const viewfinder = document.getElementById("viewfinder");
 const cameraError = document.getElementById("camera-error");
 const scanOutput = document.getElementById("scan-output");
@@ -63,7 +64,16 @@ function hideResult() {
   resultFormat.textContent = "";
   resultText.textContent = "";
   resultOpen.hidden = true;
-  scanner.resume();
+  scanner.resume().catch(showCameraError);
+}
+
+function showCameraError(err) {
+  console.error("Camera init failed:", err);
+  cameraError.hidden = false;
+  cameraError.querySelector("p").textContent =
+    err.name === "NotAllowedError"
+      ? "Camera access was denied. Enable it in Settings > Safari > Camera for this site, then reload."
+      : "Couldn't access the camera on this device.";
 }
 
 resultCopy.addEventListener("click", async () => {
@@ -140,18 +150,12 @@ historyClear.addEventListener("click", () => {
 const scanner = new Scanner({
   video,
   canvas,
+  freezeFrame,
   viewfinder,
   onResult: showResult,
 });
 
-scanner.start().catch((err) => {
-  console.error("Camera init failed:", err);
-  cameraError.hidden = false;
-  cameraError.querySelector("p").textContent =
-    err.name === "NotAllowedError"
-      ? "Camera access was denied. Enable it in Settings > Safari > Camera for this site, then reload."
-      : "Couldn't access the camera on this device.";
-});
+scanner.start().catch(showCameraError);
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {

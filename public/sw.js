@@ -1,4 +1,4 @@
-const CACHE_NAME = "barcode-scanner-shell-v3";
+const CACHE_NAME = "barcode-scanner-shell-v4";
 const SCOPE = self.registration.scope;
 
 const PRECACHE_URLS = [

@@ -47,6 +47,18 @@ body {
   background: #000;
 }
 
+/* Holds the last live frame while the camera is released. Matches #camera's
+   box exactly so the freeze is seamless — object-fit applies here because a
+   canvas is a replaced element with an intrinsic size. */
+#freeze-frame {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: #000;
+}
+
 #viewfinder {
   position: absolute;
   top: 50%;

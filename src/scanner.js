@@ -65,11 +65,13 @@ function getViewfinderVideoRect(video, viewfinderRect) {
 }
 
 export class Scanner {
-  constructor({ video, canvas, viewfinder, onResult }) {
+  constructor({ video, canvas, freezeFrame, viewfinder, onResult }) {
     this.video = video;
     this.canvas = canvas;
+    this.freezeFrame = freezeFrame;
     this.viewfinder = viewfinder;
     this.ctx = canvas.getContext("2d", { willReadFrequently: true });
+    this.freezeCtx = freezeFrame.getContext("2d");
     this.onResult = onResult;
     this.stream = null;
     this.timerId = null;
@@ -79,9 +81,28 @@ export class Scanner {
     // Tracks the last logged upscale factor so a renegotiated feed is visible
     // in the debug overlay without logging on every tick.
     this._loggedScale = null;
+
+    // Attached once, not per stream — the camera is reopened on every resume.
+    this.video.addEventListener("loadedmetadata", () => {
+      console.log(
+        `video loadedmetadata: ${this.video.videoWidth}x${this.video.videoHeight}, readyState=${this.video.readyState}`,
+      );
+    });
+    this.video.addEventListener("playing", () => {
+      console.log("video playing event fired");
+    });
+    this.video.addEventListener("error", (e) => {
+      console.error("video element error:", this.video.error, e);
+    });
   }
 
   async start() {
+    this.paused = false;
+    await this._openStream();
+    this._startLoop();
+  }
+
+  async _openStream() {
     const videoConstraints = {
       facingMode: { ideal: "environment" },
       width: { ideal: CAPTURE_WIDTH_IDEAL },
@@ -122,18 +143,6 @@ export class Scanner {
       track?.getCapabilities ? track.getCapabilities() : "n/a",
     );
 
-    this.video.addEventListener("loadedmetadata", () => {
-      console.log(
-        `video loadedmetadata: ${this.video.videoWidth}x${this.video.videoHeight}, readyState=${this.video.readyState}`,
-      );
-    });
-    this.video.addEventListener("playing", () => {
-      console.log("video playing event fired");
-    });
-    this.video.addEventListener("error", (e) => {
-      console.error("video element error:", this.video.error, e);
-    });
-
     this.video.srcObject = this.stream;
     try {
       await this.video.play();
@@ -142,6 +151,10 @@ export class Scanner {
       console.error("video.play() rejected:", err);
       throw err;
     }
+  }
+
+  _startLoop() {
+    if (this.timerId) return;
     this.timerId = setInterval(() => this._tick(), SCAN_INTERVAL_MS);
     console.log("Scan loop started, interval ms =", SCAN_INTERVAL_MS);
   }
@@ -155,12 +168,34 @@ export class Scanner {
     }
   }
 
+  // Freeze the last frame and release the camera entirely. Merely halting the
+  // decode loop would leave the sensor streaming high-resolution frames, which
+  // is where the power actually goes while a result sits on screen.
   pause() {
+    if (this.paused) return;
     this.paused = true;
+    this._captureFreezeFrame();
+    this.stop();
   }
 
-  resume() {
+  async resume() {
+    if (!this.paused) return;
     this.paused = false;
+    await this._openStream();
+    this._startLoop();
+    // Only drop the still once live frames are flowing again, so the handoff
+    // has no black gap. On failure it stays up behind the camera-error overlay.
+    this.freezeFrame.hidden = true;
+  }
+
+  _captureFreezeFrame() {
+    const w = this.video.videoWidth;
+    const h = this.video.videoHeight;
+    if (!w || !h) return;
+    this.freezeFrame.width = w;
+    this.freezeFrame.height = h;
+    this.freezeCtx.drawImage(this.video, 0, 0, w, h);
+    this.freezeFrame.hidden = false;
   }
 
   async _tick() {
